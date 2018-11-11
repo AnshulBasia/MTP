@@ -78,14 +78,20 @@ Graph::Graph(char *graphfilename, int dir_control) {
 
 		char *t = strtok(cstr, " "); 
 		int u = atoi(t); 
-
+		t = strtok(NULL, " "); 
+		int v = atoi(t); 
+		//if(u>=10 || v>=10)continue;
+		if(u>200&&u<300&&v>200&&v<300){
+			u=u%100;
+			v=v%100;
+		}
+		else continue;
 		for (int j = numNodes; j <= u; j ++ ) {
             nodes.push_back(new Node(j)); 
 			numNodes ++ ; 
         }
 
-		t = strtok(NULL, " "); 
-		int v = atoi(t); 
+		
 
 		for (int j = numNodes; j <= v; j ++ ) {
             nodes.push_back(new Node(j)); 
@@ -472,9 +478,9 @@ int Graph::floydWarshall() {
        we can say the initial values of shortest distances are based 
        on shortest paths considering no intermediate vertex. */
 	for(int i=0;i<nodes.size();i++){
-		int id = nodes[0]->nodeId;
-		for(int j=0;j<nodes[0]->fwd_labelled_edges[0].size();j++){
-			dist[id][nodes[0]->fwd_labelled_edges[0][j]] = 1;
+		int id = nodes[i]->nodeId;
+		for(int j=0;j<nodes[i]->fwd_labelled_edges[0].size();j++){
+			dist[id][nodes[i]->fwd_labelled_edges[0][j]] = 1;
 		}
 	}
     // for (i = 0; i < V; i++) 
@@ -498,8 +504,10 @@ int Graph::floydWarshall() {
             { 
                 // If vertex k is on the shortest path from 
                 // i to j, then update the value of dist[i][j] 
-                if (dist[i][k] + dist[k][j] < dist[i][j]) 
-                    dist[i][j] = dist[i][k] + dist[k][j]; 
+                if (dist[i][k] + dist[k][j] < dist[i][j]){ 
+                    dist[i][j] = dist[i][k] + dist[k][j];
+					dist[j][i] = dist[i][j];
+				} 
             } 
         } 
     } 
@@ -519,18 +527,33 @@ int Graph::floydWarshall() {
 
 void Graph::Greedy(int k){
 	int first,second;
-	
+	cout<<numEdges<<endl;
 	for(int i=0;i<k;i++){
 		cout<<"K = "<<i+1<<endl;
 		int temp = floydWarshall();
+		cout<<"edges: "<<numEdges<<endl;
+		cout<<temp<<endl;
 		int orig = temp;
 		for(int m=0;m<numNodes;m++){
-			if(m%500==0)cout<<"done with node "<<m<<endl;
+			//if(m%500==0)cout<<"done with node "<<m<<endl;
 			for(int n=m+1;n<numNodes;n++){
-				cout<<"done with node-- "<<n<<endl;
+				//cout<<"done with node-- "<<n<<endl;
 				if(dist[m][n] > 1){
+					
+					
+					// for(int q=0;q<numNodes;q++){
+					// 	for(int w=0;w<numNodes;w++){
+							
+					// 		cout<<dist[q][w]<<" ";
+					// 	}
+					// 	cout<<endl;
+					// }
+					
+					
 					addEdge(m,n,0);
+					//cout<<"edges: "<<numEdges<<endl;
 					int cl = floydWarshall();
+					
 					if(cl<temp){
 						temp = cl;
 						first = m;
@@ -541,20 +564,21 @@ void Graph::Greedy(int k){
 			}
 		}
 		if(orig>temp){
+			cout<<first<<" "<<second<<endl;
 			addEdge(first,second,0);
 		}
-		cout<<temp<<endl;
+		
 	}
 }
 
 void Graph::removeEdge(int src, int dst){
 	if ((src >= numNodes) || (dst >= numNodes)) return; 
-	nodes[src]->addEdge(dst, true); 
-	nodes[dst]->addEdge(src, false); 
+	nodes[src]->removeEdge(dst, true); 
+	nodes[dst]->removeEdge(src, false); 
 	
-	nodes[src]->addEdge(dst, false); 
-	nodes[dst]->addEdge(src, true); 
+	nodes[src]->removeEdge(dst, false); 
+	nodes[dst]->removeEdge(src, true); 
 	
-	numEdges -= 2 ; 
+	numEdges -= 1 ; 
 }
 
