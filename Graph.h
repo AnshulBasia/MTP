@@ -33,6 +33,10 @@ public:
 
 	int rr(int src, int dst, int query_type, vector<int> query_labels); 
 	int bbfs(int src, int dst, int query_type, vector<int> query_labels); 
+	double charactersticPathLength();
+	int floydWarshall();
+	void Greedy(int k);
+	void removeEdge(int m, int n);
 	
 private:
 
@@ -45,7 +49,7 @@ private:
 	vector<Node*> nodes; 
 	int numNodes; 
 	int numEdges; 
-
+	int **dist;
 	int numQueries;
 
 	bool rrParamsInitialized; 
@@ -155,7 +159,7 @@ int Graph::diameter() {
 }
 
 // Adding edges constrained on whether directional edge or not
-void Graph::addEdge(int src, int dst, int l, int dir_control = 1) {
+void Graph::addEdge(int src, int dst, int l, int dir_control = 0) {
 	if ((src >= numNodes) || (dst >= numNodes)) return; 
 	nodes[src]->addEdge(dst, true, l); 
 	nodes[dst]->addEdge(src, false, l); 
@@ -434,4 +438,123 @@ int Graph::bbfs(int src, int dst, int query_type, vector<int> query_labels) {
 	return 0; 
 }
 
+double Graph::charactersticPathLength(){
+	cout<<"Computing Characterstic Path Length"<<endl;
+	cout<<"Number of Nodes: "<<numNodes<<endl;
+	int total = 0;
+	vector<int> nu;
+	for(int i = 0; i < numNodes; i++){
+		if(i%500==0)cout<<i<<endl;
+		for(int j = i+1; j < numNodes; j++){
+			total = total + bbfs(i,j,2,nu);
+		}
+	}
+
+	return total;//*2/(numNodes*(numNodes-1));
+}
+
+int Graph::floydWarshall() { 
+	int V = numNodes;
+    /* dist[][] will be the output matrix that will finally have the shortest  
+      distances between every pair of vertices */
+    // int dist[V][V]
+	int i, j, k; 
+	// memset(dist, 10000, sizeof(dist[0][0]*V*V));
+	
+	dist = new int*[V];
+	for(int i=0;i<V;i++){
+		dist[i] = new int[V];
+		for(int j=0;j<V;j++){
+			dist[i][j] = 10000;
+		}
+	}
+    /* Initialize the solution matrix same as input graph matrix. Or  
+       we can say the initial values of shortest distances are based 
+       on shortest paths considering no intermediate vertex. */
+	for(int i=0;i<nodes.size();i++){
+		int id = nodes[0]->nodeId;
+		for(int j=0;j<nodes[0]->fwd_labelled_edges[0].size();j++){
+			dist[id][nodes[0]->fwd_labelled_edges[0][j]] = 1;
+		}
+	}
+    // for (i = 0; i < V; i++) 
+    //     for (j = 0; j < V; j++) 
+    //         dist[i][j] = graph[i][j]; 
+  
+    /* Add all vertices one by one to the set of intermediate vertices. 
+      ---> Before start of an iteration, we have shortest distances between all 
+      pairs of vertices such that the shortest distances consider only the 
+      vertices in set {0, 1, 2, .. k-1} as intermediate vertices. 
+      ----> After the end of an iteration, vertex no. k is added to the set of 
+      intermediate vertices and the set becomes {0, 1, 2, .. k} */
+    for (k = 0; k < V; k++) 
+    { 
+        // Pick all vertices as source one by one 
+        for (i = 0; i < V; i++) 
+        { 
+            // Pick all vertices as destination for the 
+            // above picked source 
+            for (j = 0; j < V; j++) 
+            { 
+                // If vertex k is on the shortest path from 
+                // i to j, then update the value of dist[i][j] 
+                if (dist[i][k] + dist[k][j] < dist[i][j]) 
+                    dist[i][j] = dist[i][k] + dist[k][j]; 
+            } 
+        } 
+    } 
+	int total = 0;
+    for (int i = 0; i < V; i++) 
+    { 
+        for (int j = 0; j < V; j++) 
+        { 
+            //if(dist[i][j]>1)cout<<i<<" "<<j<<endl;
+			if (dist[i][j] < 10000) 
+                total += dist[i][j]; 
+        } 
+        
+    } 
+	return total;
+} 
+
+void Graph::Greedy(int k){
+	int first,second;
+	
+	for(int i=0;i<k;i++){
+		cout<<"K = "<<i+1<<endl;
+		int temp = floydWarshall();
+		int orig = temp;
+		for(int m=0;m<numNodes;m++){
+			if(m%500==0)cout<<"done with node "<<m<<endl;
+			for(int n=m+1;n<numNodes;n++){
+				cout<<"done with node-- "<<n<<endl;
+				if(dist[m][n] > 1){
+					addEdge(m,n,0);
+					int cl = floydWarshall();
+					if(cl<temp){
+						temp = cl;
+						first = m;
+						second = n;
+					}
+					removeEdge(m,n);
+				}
+			}
+		}
+		if(orig>temp){
+			addEdge(first,second,0);
+		}
+		cout<<temp<<endl;
+	}
+}
+
+void Graph::removeEdge(int src, int dst){
+	if ((src >= numNodes) || (dst >= numNodes)) return; 
+	nodes[src]->addEdge(dst, true); 
+	nodes[dst]->addEdge(src, false); 
+	
+	nodes[src]->addEdge(dst, false); 
+	nodes[dst]->addEdge(src, true); 
+	
+	numEdges -= 2 ; 
+}
 

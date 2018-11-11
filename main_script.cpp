@@ -11,5 +11,7 @@ int main(int argc, char *argv[]){
 
 	srand(time(NULL));
 	Graph *tg = new Graph(graphFile, dir_control);
+	//cout<<tg->floydWarshall()<<endl;
+	tg->Greedy(5);
 	
 }

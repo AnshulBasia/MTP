@@ -32,7 +32,7 @@ public:
 	void addEdge(int _destId, bool _direction, int _label);
     void sort_labels();
     void add_label(int l);
-
+	void removeEdge(int _destId, bool _direction, int _label);
     int nodeId;
     vector<int> labels;
 
@@ -55,6 +55,17 @@ void Node::addEdge(int _destId, bool _direction, int _label = 0){
 	else {
 		bwd_labelled_edges[_label].push_back(_destId);
 		numBwdEdges[_label] += 1;
+	}
+}
+
+void Node::removeEdge(int _destId, bool _direction, int _label = 0){
+	if ( _direction) {
+		fwd_labelled_edges[_label].erase(remove(fwd_labelled_edges[_label].begin(), fwd_labelled_edges[_label].end(), _destId), fwd_labelled_edges[_label].end());
+		numFwdEdges[_label] -= 1;
+	}
+	else {
+		bwd_labelled_edges[_label].erase(remove(bwd_labelled_edges[_label].begin(), bwd_labelled_edges[_label].end(), _destId), bwd_labelled_edges[_label].end());
+		numBwdEdges[_label] -= 1;
 	}
 }
 
