@@ -10,6 +10,6 @@ int main(int argc, char *argv[]){
 	srand(time(NULL));
 	Graph *tg = new Graph(graphFile, 0);
 	//cout<<tg->floydWarshall()<<endl;
-	tg->Greedy(5);
+	tg->ModifiedGreedy(10);
 	
 }

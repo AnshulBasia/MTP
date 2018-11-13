@@ -36,6 +36,7 @@ public:
 	double charactersticPathLength();
 	int floydWarshall();
 	void Greedy(int k);
+	void ModifiedGreedy(int k);
 	void removeEdge(int m, int n);
 	
 private:
@@ -81,9 +82,9 @@ Graph::Graph(char *graphfilename, int dir_control) {
 		t = strtok(NULL, " "); 
 		int v = atoi(t); 
 		//if(u>=10 || v>=10)continue;
-		if(u>200&&u<300&&v>200&&v<300){
-			u=u%100;
-			v=v%100;
+		if(u > 200 && u < 300 && v > 200 && v < 300){
+			u %= 100;
+			v %= 100;
 		}
 		else continue;
 		for (int j = numNodes; j <= u; j ++ ) {
@@ -569,6 +570,65 @@ void Graph::Greedy(int k){
 		}
 		
 	}
+	cout<<"Final"<<endl;
+	int temp = floydWarshall();
+	cout<<"edges: "<<numEdges<<endl;
+	cout<<temp<<endl;
+}
+
+void Graph::ModifiedGreedy(int k){
+	int first,second,first2,second2;
+	cout<<numEdges<<endl;
+	for(int i=0;i<k/2;i++){
+		cout<<"K = "<<i+1<<endl;
+		int temp = floydWarshall();
+		int temp2 = temp;
+		cout<<"edges: "<<numEdges<<endl;
+		cout<<temp<<endl;
+		int orig = temp;
+		for(int m=0;m<numNodes;m++){
+			//if(m%500==0)cout<<"done with node "<<m<<endl;
+			for(int n=m+1;n<numNodes;n++){
+				//cout<<"done with node-- "<<n<<endl;
+				if(dist[m][n] > 1){
+					
+					addEdge(m,n,0);
+					
+					int cl = floydWarshall();
+					
+					if(cl<temp){
+						temp2 = temp;
+						first2 = first;
+						second2 = second;
+						temp = cl;
+						first = m;
+						second = n;
+					}
+					else if(cl < temp2){
+						temp2 = cl;
+						first2 = m;
+						second2 = n;
+					}
+					removeEdge(m,n);
+				}
+			}
+		}
+		if(orig>temp){
+			cout<<"first min ="<<temp<<endl;
+			cout<<first<<" "<<second<<endl;
+			addEdge(first,second,0);
+		}
+		if(orig>temp2){
+			cout<<"second min ="<<temp2<<endl;
+			cout<<first2<<" "<<second2<<endl;
+			addEdge(first2,second2,0);
+		}
+		
+	}
+	cout<<"Final"<<endl;
+	int temp = floydWarshall();
+	cout<<"edges: "<<numEdges<<endl;
+	cout<<temp<<endl;
 }
 
 void Graph::removeEdge(int src, int dst){
